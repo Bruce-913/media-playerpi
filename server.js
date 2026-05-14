@@ -1,12 +1,20 @@
 const express = require('express');
 const path = require('path');
+require('dotenv').config();
+
+const spotifyRoutes = require('./spotifyRoutes');
 const app = express();
 
-app.get('/', (req, res) => {
-    res.send(path.join(__dirname, 'index.html'));
-});
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/', spotifyRoutes);
 
-// https://localhost:3000
+// might be able to remove index route at some point
+// app.get('/', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'index.html'));
+// });
+
+// http://localhost:3000
 app.listen(3000, '0.0.0.0', () => {
   console.log('Server running on port 3000');
 });
