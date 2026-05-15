@@ -1,11 +1,11 @@
 const querystring = require('querystring');
 
 const client_id = process.env.CLIENT_ID;
-const client_secret = process.env.CLEINT_SECRET;
-const redirect_url = process.env.REDIRECT_URL;
+const client_secret = process.env.CLIENT_SECRET;
+const redirect_uri = process.env.REDIRECT_URI;
 
-let access_token = "";
-let refresh_token = "";
+let access_token = null;
+let refresh_token = null;
 
 function getLoginURL() {
   const scope = [
@@ -93,10 +93,36 @@ async function playPlayback() {
   );
 }
 
+async function  previousPlay() {
+  await fetch(
+    "https://api.spotify.com/v1/me/player/previous", 
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${access_token}`
+      }
+    }
+  )
+}
+
+async function nextPlay() {
+  await fetch(
+    "https://api.spotify.com/v1/me/player/next", 
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${access_token}`
+      }
+    }
+  )
+}
+
 module.exports = {
   getLoginURL,
   getTokens,
   getCurrentSong,
   pausePlayback,
-  playPlayback
+  playPlayback,
+  previousPlay,
+  nextPlay
 };
