@@ -14,15 +14,14 @@ function getLoginURL() {
     "user-read-currently-playing"
   ].join(" ");
 
-  return (
-    "https://accounts.spotify.com/authorize?" +
-    querystring.stringify({
-      response_type: "code",
-      client_id,
-      scope,
-      redirect_uri
-    })
-  );
+  const params = new URLSearchParams({
+    response_type: "code",
+    client_id,
+    scope,
+    redirect_uri
+  });
+
+  return `https://accounts.spotify.com/authorize?${params.toString()}`;
 }
 
 async function getTokens(code) {
