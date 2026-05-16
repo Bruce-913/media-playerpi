@@ -8,6 +8,9 @@ let access_token = null;
 let refresh_token = null;
 
 function getLoginURL() {
+  console.log("CLIENT_ID", client_id);
+  console.log("REDIRECT_URI", redirect_uri);
+
   const scope = [
     "user-read-playback-state",
     "user-modify-playback-state",
@@ -21,7 +24,11 @@ function getLoginURL() {
     redirect_uri
   });
 
-  return `https://accounts.spotify.com/authorize?${params.toString()}`;
+  const url =  `https://accounts.spotify.com/authorize?${params.toString()}`;
+
+  console.log("Final login URL: ", url);
+
+  return url;
 }
 
 async function getTokens(code) {
