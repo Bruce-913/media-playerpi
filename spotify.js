@@ -52,7 +52,75 @@ async function getTokens(code) {
   return data;
 }
 
+async function refreshAccessToken() {
+  const response = await fetch(
+    "https://accounts.spotify.com/api/token",
+    {
+      method: "POST",
+      headers: {
+        Authorization:
+          "Basic " +
+          Buffer.from(client_id + ":" + client_secret).toString("base64"),
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  access_token = data.access_token;
+
+  return access_token;
+}
+
+function getAccessToken() {
+  return access_token;
+}
+
+function getRefreshtoken() {
+  return refresh_token;
+}
+
+// async function getCurrentSong() {
+
+//   if (!access_token) {
+//     console.log("No access token yet");
+//     return null;
+//   }
+//   console.log("ACCESS TOKEN:", access_token);
+//   const response = await fetch(
+//     "https://api.spotify.com/v1/me/player/currently-playing",
+//     {
+//       headers: {
+//         Authorization: `Bearer ${access_token}`
+//       }
+//     }
+//   );
+
+//   if (response.status === 204) {
+//     return null;
+//   } else if (response.status === 429) {
+//     console.warn("exceeded rate limits")
+//     return null
+//   } else if (!response.ok) {
+//     console.warn("spotify API error: ", await response.text());
+//   } else {
+//     return await response.json();
+//   }
+
+//   // return await response.json();
+// }
+
 async function getCurrentSong() {
+  if (!access_token) {
+    console.log("No access token yet");
+    return null;
+  }
+
   const response = await fetch(
     "https://api.spotify.com/v1/me/player/currently-playing",
     {
@@ -63,6 +131,13 @@ async function getCurrentSong() {
   );
 
   if (response.status === 204) {
+    return null;
+  } else if (response.status === 429) {
+    const retryAfter = response.headers.get("Retry-After") || 5;
+    console.warn(`Rate limited. Retry after ${retryAfter}s`);
+    return { rateLimited: true, retryAfter: parseInt(retryAfter) };
+  } else if (!response.ok) {
+    console.warn("Spotify API error:", await response.text());
     return null;
   }
 
@@ -117,6 +192,18 @@ async function nextPlay() {
   )
 }
 
+async function seekTime(position_ms) {
+  await fetch(
+    `https://api.spotify.com/v1/me/player/seek?position_ms=${position_ms}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${access_token}`
+      }
+    }
+  )
+}
+
 module.exports = {
   getLoginURL,
   getTokens,
@@ -124,5 +211,17 @@ module.exports = {
   pausePlayback,
   playPlayback,
   previousPlay,
-  nextPlay
+  nextPlay,
+  seekTime,
+  getAccessToken,
+  getRefreshtoken
 };
+
+setInterval(async () => {
+  try {
+    await refreshAccessToken();
+    console.log("Access token refreshed");
+  } catch (err) {
+    console.error("Token refresh failed:", err.message);
+  }
+}, 1000 * 60 * 50);

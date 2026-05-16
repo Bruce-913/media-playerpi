@@ -8,6 +8,7 @@ router.get('/login', (req, res) => {
 });
 
 router.get('/callback', async(req, res) => {
+    console.log("callback hit!")
     const code = req.query.code;
 
     console.log("code: ", code);
@@ -51,7 +52,28 @@ router.post('/playNextSong', async(req, res) => {
     } catch (err) {
         console.err(err)
         res.sendStatus(500)
-    }
+    };
+});
+
+router.put("/seekTime", async(req, res) => {
+    const position_ms = req.body.position_ms;
+
+
+    try {
+        await spotify.seekTime(position_ms);
+        res.sendStatus(204);
+    } catch(err) {
+        console.err(err);
+        res.sendStatus(500);
+    };
+});
+
+router.get("/tokenStatus", async(req, res) => {
+    const loginStatus = !!spotify.getAccessToken();
+
+    res.json({
+        loginStatus
+    });
 });
 
 module.exports = router;
