@@ -1,20 +1,26 @@
 let trackPlayStatus = false;
-let pollTimeoutId = null;
+let APICallTimeoutId = null;
+let APICallInterval = 5000;
+
+let currentProgress = 0
+let currentDuration = 0
+let progressTimer = null
 
 async function startUpdating() {
-  if (pollTimeoutId !== null) return; // already running, bail out
+  if (APICallTimeoutId !== null) return; // already running, bail out
 
   const run = async () => {
     await updateUI();
-    pollTimeoutId = setTimeout(run, 1000);
+    APICallTimeoutId = setTimeout(run, APICallInterval);
   };
 
   await run();
 }
 
 function stopUpdating() {
-  clearTimeout(pollTimeoutId);
-  pollTimeoutId = null;
+  clearTimeout(APICallTimeoutId);
+  clearInterval(progressTimer);
+  APICallTimeoutId = null;
 }
 
 async function updateUI() {
@@ -25,34 +31,23 @@ async function updateUI() {
   if (data && data.rateLimited) {
     const backoff = (data.retryAfter * 1000) + 1000;
     console.warn(`Rate limited, backing off ${backoff}ms`);
-    pollInterval = Math.max(pollInterval, backoff);
+    APICallInterval = backoff;
     return;
   }
-
-  pollInterval = 3000
 
   if (!data || !data.item) return;
 
   trackPlayStatus = data.is_playing
-
-  const progressBar = document.getElementById("progressBar");
+  currentProgress = data.progress_ms;
+  currentDuration = data.item.duration_ms;
 
   const songDuration = data.item.duration_ms
-  const songProgress = data.progress_ms
 
   const songDurationMinutes = Math.floor((songDuration * 0.001) / 60);
   const remainderDurationSeconds = Math.floor(((songDuration * 0.001) % 60));
   const formattedSongDur = `${songDurationMinutes}:${remainderDurationSeconds.toString().padStart(2, "0")}`;
-
-  const songMinutes = Math.floor((songProgress * 0.001) / 60);
-  const remainderSeconds = Math.floor(((songProgress * 0.001) % 60));
-  const formattedCurrentTime = `${songMinutes}:${remainderSeconds.toString().padStart(2, "0")}`;
-
-  const barPercent = (songProgress / songDuration) * 100
  
-  document.getElementById("currentTime").innerText = formattedCurrentTime
   document.getElementById("songLength").innerText = formattedSongDur
-  document.getElementById("progressBar").value = barPercent
 
   document.getElementById("songName").innerText =
     data.item.name;
@@ -63,10 +58,34 @@ async function updateUI() {
   document.getElementById("albumArt").src =
     data.item.album.images[0].url;
 
-  if (!draggingElement) {
-    progressBar.value = barPercent;
-  }
+  startProgressBarAnimation();
 };
+
+
+function startProgressBarAnimation() {
+    clearInterval(progressTimer);
+
+    if (!trackPlayStatus) return;
+
+    progressTimer = setInterval(() => {
+        currentProgress += 1000;
+
+        const percent = (currentProgress / currentDuration) * 100;
+
+        if (!draggingElement) {
+            document.getElementById("progressBar").value = percent;
+        }
+
+        const songMinutes = Math.floor((currentProgress * 0.001) / 60);
+        const remainderSeconds = Math.floor((currentProgress * 0.001) % 60);
+
+        document.getElementById("currentTime").innerText = `${songMinutes}:${remainderSeconds.toString().padStart(2, "0")}`
+
+        if(currentProgress >= currentDuration) {
+            clearInterval(progressTimer);
+        }
+    }, 1000);
+} 
 
 // setInterval(updateUI, 10000);
 
@@ -129,12 +148,10 @@ progressManipulation.addEventListener("input", async(e) => {
 progressManipulation.addEventListener("change", async(e) => {
     const percent = e.target.value;
 
-    const res = await fetch("/currentInfo");
-    const data = await res.json();
+    const newTime = Math.floor((percent / 100) * currentDuration);
 
-    const duration = data.item.duration_ms;
-
-    const newTime = Math.floor((percent / 100) * duration);
+    currentProgress = newTime;
+    document.getElementById("progressBar").value = percent;
 
     await fetch("/seekTime", {
         method: "PUT",
@@ -145,7 +162,6 @@ progressManipulation.addEventListener("change", async(e) => {
             position_ms: newTime
         })
     })
-
 })
 
 async function checkLoginStatus() {
