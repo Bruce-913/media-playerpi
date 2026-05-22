@@ -18,9 +18,16 @@ router.get('/callback', async(req, res) => {
 });
 
 router.get('/currentInfo', async(req, res) => {
-    const data = await spotify.getCurrentSong();
+    try{
+        const data = await spotify.getCurrentSong();
 
-    res.json(data);
+        res.json(data);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            error: "Failed to get the current song"
+        });
+    }
 });
 
 router.post('/pauseSong', async(req, res) => {

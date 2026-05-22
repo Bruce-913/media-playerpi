@@ -126,28 +126,32 @@ async function getCurrentSong() {
     console.log("No access token yet");
     return null;
   }
-
-  const response = await fetch(
-    "https://api.spotify.com/v1/me/player/currently-playing",
-    {
-      headers: {
-        Authorization: `Bearer ${access_token}`
+  try{
+    const response = await fetch(
+      "https://api.spotify.com/v1/me/player/currently-playing",
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`
+        }
       }
+    );
+
+    if (response.status === 204) {
+      return null;
+    } else if (response.status === 429) {
+      const retryAfter = response.headers.get("Retry-After") || 5;
+      console.warn(`Rate limited. Retry after ${retryAfter}s`);
+      return { rateLimited: true, retryAfter: parseInt(retryAfter) };
+    } else if (!response.ok) {
+      console.warn("Spotify API error:", await response.text());
+      return null;
     }
-  );
 
-  if (response.status === 204) {
-    return null;
-  } else if (response.status === 429) {
-    const retryAfter = response.headers.get("Retry-After") || 5;
-    console.warn(`Rate limited. Retry after ${retryAfter}s`);
-    return { rateLimited: true, retryAfter: parseInt(retryAfter) };
-  } else if (!response.ok) {
-    console.warn("Spotify API error:", await response.text());
-    return null;
+    return await response.json();
+  } catch (err) {
+    console.error("Fetch failed:", err);
+    return null
   }
-
-  return await response.json();
 }
 
 async function pausePlayback() {
