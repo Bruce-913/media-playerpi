@@ -1,4 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
+
 body {
+    font-family: 'sans-serif';
     text-align: center;
     background-color: rgb(1, 31, 75);
     color: white;
@@ -9,6 +12,11 @@ button {
     color: white;
 }
 
+#clockTime {
+    font-family: 'Permanent Marker', sans-serif;
+}
+
+/* accent-color switches input range color */
 #progressBar {
     width: 50%;
 }

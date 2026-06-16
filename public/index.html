@@ -1,58 +1,60 @@
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Media Player Pi</title>
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
-        
-        <h1>Spotify Media Player</h1>
-        <!-- <p>Highly recommended! &#9733;&#9733;&#9733;&#9733;&#9734;</p> -->
-        <!-- <img src="/img/star.png" width="100"> -->
 
-        <button id="loginButton" onclick="window.location.href='/login'">
-            Login with Spotify
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Media Player Pi</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1 id="clockTime">Spotify Media Player</h1>
+
+    <button id="loginButton" onclick="window.location.href='/login'">
+        Login with Spotify
+    </button>
+
+    <div class="row">
+        <div class="col-3">
+            <img src="/img/star.png" width="100">
+            <img src="/img/snoopy.png" width="150">
+        </div>
+        <div class="col-6">
+            <img id="albumArt" class="border border-5" width="280">
+        </div>
+        <div class="col-3">
+            <img src="/img/star.png" width="100">
+            <img src="/img/snoopy.png" width="150" style="transform: scaleX(-1);">
+        </div>
+
+    </div>
+    <h3 id="songName" class="mb-0">No song currently playing</h3>
+    <h4 id="artistName"></h4>
+
+    <div id="playbackStatus">
+        <button id="prevButton">
+            <span class="material-icons">skip_previous</span>
         </button>
+        <button id="playPauseButton">
+            <span id="playPauseIcon" class="material-icons">play_arrow</span>
+        </button>
+        <button id="nextButton">
+            <span class="material-icons">skip_next</span>
+        </button>
+    </div>
 
-        <div class="row">
-            <div class="col-3">
-                <img src="/img/star.png" width="100">
-                <img src="/img/snoopy.png" width="150">
-            </div>
-            <div class="col-6">
-                <img id="albumArt" class="border border-5" width="280">
-            </div>
-            <div class="col-3">
-                <img src="/img/star.png" width="100">
-                <img src="/img/snoopy.png" width="150" style="transform: scaleX(-1);">
-            </div>
+    <div id="progressContainer">
+        <span id="currentTime">0:00 </span>
+        <input type="range" id="progressBar" min="0" max="100" value="0">
+        <span id="songLength"> 0:00</span>
 
-        </div>
-        <h3 id="songName" class="mb-0">No song currently playing</h3>
-        <h4 id="artistName"></h4>
+    </div>
 
-        <div id="playbackStatus">
-            <button id="prevButton">
-                <span class="material-icons">skip_previous</span>
-            </button>
-            <button id="playPauseButton">
-                <span id="playPauseIcon" class="material-icons">play_arrow</span>
-            </button>
-            <button id="nextButton">
-                <span class="material-icons">skip_next</span>
-            </button>
-        </div>
+    <script src="app.js"></script>
+</body>
 
-        <div id="progressContainer"> 
-            <span id="currentTime">0:00 </span>
-                <input type="range" id="progressBar" min="0" max="100" value="0">
-            <span id="songLength"> 0:00</span>
-            
-        </div>
-
-        <script src="app.js"></script>
-    </body>
 </html>

@@ -6,59 +6,71 @@ let currentProgress = 0
 let currentDuration = 0
 let progressTimer = null
 
+function updateClock() {
+    const clock = new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: "2-digit"
+    });
+
+    document.getElementById('clockTime').textContent = clock
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+
 async function startUpdating() {
-  if (APICallTimeoutId !== null) return; // already running, bail out
+    if (APICallTimeoutId !== null) return; // already running, bail out
 
-  const run = async () => {
-    await updateUI();
-    APICallTimeoutId = setTimeout(run, APICallInterval);
-  };
+    const run = async () => {
+        await updateUI();
+        APICallTimeoutId = setTimeout(run, APICallInterval);
+    };
 
-  await run();
+    await run();
 }
 
 function stopUpdating() {
-  clearTimeout(APICallTimeoutId);
-  clearInterval(progressTimer);
-  APICallTimeoutId = null;
+    clearTimeout(APICallTimeoutId);
+    clearInterval(progressTimer);
+    APICallTimeoutId = null;
 }
 
 async function updateUI() {
-  const res = await fetch("/currentInfo");
-  const data = await res.json();
+    const res = await fetch("/currentInfo");
+    const data = await res.json();
 
-  // If rate limited, back off
-  if (data && data.rateLimited) {
-    const backoff = (data.retryAfter * 1000) + 1000;
-    console.warn(`Rate limited, backing off ${backoff}ms`);
-    APICallInterval = backoff;
-    return;
-  }
+    // If rate limited, back off
+    if (data && data.rateLimited) {
+        const backoff = (data.retryAfter * 1000) + 1000;
+        console.warn(`Rate limited, backing off ${backoff}ms`);
+        APICallInterval = backoff;
+        return;
+    }
 
-  if (!data || !data.item) return;
+    if (!data || !data.item) return;
 
-  trackPlayStatus = data.is_playing
-  currentProgress = data.progress_ms;
-  currentDuration = data.item.duration_ms;
+    trackPlayStatus = data.is_playing
+    currentProgress = data.progress_ms;
+    currentDuration = data.item.duration_ms;
 
-  const songDuration = data.item.duration_ms
+    const songDuration = data.item.duration_ms
 
-  const songDurationMinutes = Math.floor((songDuration * 0.001) / 60);
-  const remainderDurationSeconds = Math.floor(((songDuration * 0.001) % 60));
-  const formattedSongDur = `${songDurationMinutes}:${remainderDurationSeconds.toString().padStart(2, "0")}`;
- 
-  document.getElementById("songLength").innerText = formattedSongDur
+    const songDurationMinutes = Math.floor((songDuration * 0.001) / 60);
+    const remainderDurationSeconds = Math.floor(((songDuration * 0.001) % 60));
+    const formattedSongDur = `${songDurationMinutes}:${remainderDurationSeconds.toString().padStart(2, "0")}`;
 
-  document.getElementById("songName").innerText =
-    data.item.name;
+    document.getElementById("songLength").innerText = formattedSongDur
 
-  document.getElementById("artistName").innerText =
-    data.item.artists[0].name;
+    document.getElementById("songName").innerText =
+        data.item.name;
 
-  document.getElementById("albumArt").src =
-    data.item.album.images[0].url;
+    document.getElementById("artistName").innerText =
+        data.item.artists[0].name;
 
-  startProgressBarAnimation();
+    document.getElementById("albumArt").src =
+        data.item.album.images[0].url;
+
+    startProgressBarAnimation();
 };
 
 
@@ -81,11 +93,11 @@ function startProgressBarAnimation() {
 
         document.getElementById("currentTime").innerText = `${songMinutes}:${remainderSeconds.toString().padStart(2, "0")}`
 
-        if(currentProgress >= currentDuration) {
+        if (currentProgress >= currentDuration) {
             clearInterval(progressTimer);
         }
     }, 1000);
-} 
+}
 
 // setInterval(updateUI, 10000);
 
@@ -96,7 +108,7 @@ const playPauseicon = document.getElementById("playPauseIcon")
 
 const progressManipulation = document.getElementById('progressBar')
 
-playPreviousSong.addEventListener("click", async() => {
+playPreviousSong.addEventListener("click", async () => {
     await fetch("/playPreviousSong", {
         method: "POST"
     })
@@ -128,7 +140,7 @@ playPauseButton.addEventListener("click", async () => {
 });
 
 
-playNextSong.addEventListener("click", async() => {
+playNextSong.addEventListener("click", async () => {
     await fetch("/playNextSong", {
         method: "POST"
     })
@@ -141,11 +153,11 @@ progressManipulation.addEventListener("pointerup", () => draggingElement = false
 progressManipulation.addEventListener("pointercancel", () => draggingElement = false);
 
 
-progressManipulation.addEventListener("input", async(e) => {
+progressManipulation.addEventListener("input", async (e) => {
     const percent = e.target.value;
 });
 
-progressManipulation.addEventListener("change", async(e) => {
+progressManipulation.addEventListener("change", async (e) => {
     const percent = e.target.value;
 
     const newTime = Math.floor((percent / 100) * currentDuration);

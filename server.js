@@ -16,6 +16,7 @@ app.use('/', spotifyRoutes);
 
 // http://localhost:3000
 app.listen(3000, '0.0.0.0', () => {
-  console.log('Server running on port 3000');
+  console.log('Server running on port 3000 http://localhost:3000 or  http://127.0.0.1:3000');
+  console.log("press control + C to quit");
 });
 
